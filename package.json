@@ -1,0 +1,22 @@
+{
+  "name": "backupapp",
+  "version": "1.0.0",
+  "description": "Aplikasi backup otomatis dengan GUI Tailwind + Electron",
+  "main": "main.js",
+  "author": "Dimas",
+  "license": "ISC",
+  "scripts": {
+    "start": "electron .",
+    "build:css": "npx tailwindcss -i ./src/input.css -o ./src/output.css --watch"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.4",
+    "electron-store": "^10.0.1",
+    "node-schedule": "^2.1.1",
+    "tailwindcss": "^4.1.4"
+  },
+  "devDependencies": {
+    "electron": "^35.2.0"
+  },
+  "keywords": []
+}
