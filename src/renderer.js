@@ -38,3 +38,8 @@ function appendLog(msg) {
   p.textContent = `[${new Date().toLocaleString()}] ${msg}`;
   log.prepend(p);
 }
+
+document.getElementById('openSheet').onclick = () => {
+  const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1Zd9w4mCHS-CrxlmeZahW2GXgFhuLRS-GuG_efYmLmqM/edit';
+  window.open(spreadsheetUrl, '_blank');
+};
