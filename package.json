@@ -12,7 +12,10 @@
   "dependencies": {
     "@tailwindcss/cli": "^4.1.4",
     "electron-store": "^10.0.1",
+    "express": "^5.1.0",
+    "googleapis": "^148.0.0",
     "node-schedule": "^2.1.1",
+    "open": "^8.4.2",
     "tailwindcss": "^4.1.4"
   },
   "devDependencies": {

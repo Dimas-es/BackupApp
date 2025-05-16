@@ -15,19 +15,29 @@ document.getElementById('manualBackup').onclick = async () => {
   appendLog(result);
 };
 
-document.getElementById('autoBackup').onclick = () => {
+document.getElementById('autoBackup').onclick = async () => {
   const source = document.getElementById('sourcePath').value;
   const target = document.getElementById('targetPath').value;
   const interval = document.getElementById('interval').value;
   const time = document.getElementById('time').value;
 
+  // Build cron rule
   let rule;
   if (interval === "daily") rule = `0 ${time.split(':')[1]} ${time.split(':')[0]} * * *`;
   else if (interval === "monthly") rule = `0 ${time.split(':')[1]} ${time.split(':')[0]} 1 * *`;
   else if (interval === "yearly") rule = `0 ${time.split(':')[1]} ${time.split(':')[0]} 1 1 *`;
 
-  window.electronAPI.setSchedule(rule, source, target);
-  appendLog(`🗓️ Jadwal backup diset: ${interval} @ ${time}`);
+  const backupLocal = document.getElementById('backupLocal').checked;
+  const backupGdrive = document.getElementById('backupGdrive').checked;
+
+  if (backupLocal) {
+    await window.electronAPI.setSchedule(rule, source, target);
+    appendLog(`🗓️ Jadwal backup lokal diset: ${interval} @ ${time}`);
+  }
+  if (backupGdrive) {
+    await window.electronAPI.setGdriveSchedule(rule, source, null); // null = folder BackupApp otomatis
+    appendLog(`🗓️ Jadwal backup ke Google Drive diset: ${interval} @ ${time}`);
+  }
 };
 
 window.electronAPI.onLogUpdate(msg => appendLog(msg));
@@ -38,3 +48,29 @@ function appendLog(msg) {
   p.textContent = `[${new Date().toLocaleString()}] ${msg}`;
   log.prepend(p);
 }
+
+document.getElementById('gdriveBackup').addEventListener('click', async () => {
+  const source = document.getElementById('sourcePath').value;
+  const target = document.getElementById('targetPath').value;
+
+  if (!source) {
+    logMessage("❌ Folder sumber belum dipilih.");
+    return;
+  }
+
+  try {
+    const result = await window.electronAPI.backupToGdrive(source, target || null);
+    logMessage(result);
+  } catch (err) {
+    logMessage(`❌ Gagal backup ke Google Drive: ${err.message}`);
+  }
+});
+
+function logMessage(msg) {
+  const logElement = document.getElementById('log');
+  const p = document.createElement('p');
+  p.textContent = `${new Date().toLocaleTimeString()} - ${msg}`;
+  logElement.appendChild(p);
+  logElement.scrollTop = logElement.scrollHeight;
+}
+

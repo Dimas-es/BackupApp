@@ -1,3 +1,4 @@
+const { backupToGDrive } = require('./gdriveBackup');
 const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
@@ -45,6 +46,15 @@ ipcMain.handle('backup-now', async (_, source, target) => {
   }
 });
 
+ipcMain.handle('backup-to-gdrive', async (event, source, target) => {
+  try {
+    const result = await backupToGDrive(null, null, source, target); // pastikan backupToGDrive menerima 4 argumen
+    return result;
+  } catch (err) {
+    return `❌ Error: ${err.message}`;
+  }
+});
+
 ipcMain.handle('set-schedule', (_, rule, source, target) => {
   schedule.scheduleJob(rule, () => {
     if (!fs.existsSync(source) || !fs.existsSync(target)) return;
@@ -53,5 +63,26 @@ ipcMain.handle('set-schedule', (_, rule, source, target) => {
     fs.cpSync(source, destFolder, { recursive: true });
 
     mainWindow.webContents.send('log-update', `🕒 Backup otomatis ke: ${destFolder}`);
+  });
+});
+
+ipcMain.handle('list-gdrive-folders', async () => {
+  try {
+    const auth = await getDriveAuth(); // Pastikan getDriveAuth diekspor juga
+    const folders = await listDriveFolders(auth);
+    return folders;
+  } catch (err) {
+    return [];
+  }
+});
+
+ipcMain.handle('set-gdrive-schedule', (_, rule, source, parentId = null) => {
+  schedule.scheduleJob(rule, async () => {
+    try {
+      const result = await backupToGDrive(null, null, source, parentId);
+      mainWindow.webContents.send('log-update', `🕒 Backup otomatis ke Google Drive: ${result}`);
+    } catch (err) {
+      mainWindow.webContents.send('log-update', `❌ Gagal backup otomatis ke Google Drive: ${err.message}`);
+    }
   });
 });
