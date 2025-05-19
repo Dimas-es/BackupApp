@@ -49,6 +49,11 @@ function appendLog(msg) {
   log.prepend(p);
 }
 
+document.getElementById('openSheet').onclick = () => {
+  const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1Zd9w4mCHS-CrxlmeZahW2GXgFhuLRS-GuG_efYmLmqM/edit';
+  window.open(spreadsheetUrl, '_blank');
+};
+
 document.getElementById('gdriveBackup').addEventListener('click', async () => {
   const source = document.getElementById('sourcePath').value;
   const target = document.getElementById('targetPath').value;
