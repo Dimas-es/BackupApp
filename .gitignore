@@ -8,15 +8,3 @@ node_modules/
 token_gsheet.json
 token_gdrive.json
 *.token.json
-service-account.json
-credentials.json
-credentials_gdrive.json
-credentials_gsheets.json
-
-# VSCode settings (optional, jika tidak ingin dishare)
-.vscode/
-
-# Build artifacts (jika ada)
-dist/
-build/
-out/
