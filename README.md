@@ -13,15 +13,15 @@ BackupApp adalah aplikasi desktop berbasis Electron dan Node.js untuk melakukan 
 | Yusa Putra Rosdiana          | Membuat OAuth Client ID untuk google drive dan merapikan backend (struktur dan logika kode) |
 
 🚀 Fitur Utama
-   🔁 Backup otomatis file atau folder sesuai jadwal
+   1. Backup otomatis file atau folder sesuai jadwal
 
-   ☁️ Upload hasil backup ke Google Drive
+   2. Upload hasil backup ke Google Drive
   
-   📊 Catatan backup tersimpan ke Log & Google Sheets
+   3. Catatan backup tersimpan ke Log & Google Sheets
 
-   🖥️ Antarmuka desktop menggunakan Electron
+   4. Antarmuka desktop menggunakan Electron
 
-   ⏰ Penjadwalan fleksibel menggunakan node-schedule
+   5. Penjadwalan fleksibel menggunakan node-schedule
 
 🧰 Teknologi yang Digunakan
 
