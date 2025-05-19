@@ -1,7 +1,6 @@
 📦 BackupApp
 
 BackupApp adalah aplikasi desktop berbasis Electron dan Node.js untuk melakukan backup otomatis ke Google Drive, serta mencatat log backup ke Google Sheets. Penjadwalan dilakukan menggunakan node-schedule.
-🚀 Fitur Utama
 
 👨‍👩‍👧‍👦 Anggota Tim & Kontribusi
 
@@ -13,7 +12,7 @@ BackupApp adalah aplikasi desktop berbasis Electron dan Node.js untuk melakukan 
 | Talitha Ramadhani Nur Azizah | Menghubungkan OAuth Client ID untuk akses Google Drive                                      |
 | Yusa Putra Rosdiana          | Membuat OAuth Client ID untuk google drive dan merapikan backend (struktur dan logika kode) |
 
-
+🚀 Fitur Utama
   🔁 Backup otomatis file atau folder sesuai jadwal
 
   ☁️ Upload hasil backup ke Google Drive
