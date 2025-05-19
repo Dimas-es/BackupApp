@@ -1,5 +1,12 @@
+require('dotenv').config();
 const { google } = require('googleapis');
-const keys = require('./service-account.json');
+
+// Ambil service account dari .env (base64)
+const base64 = process.env.SERVICE_ACCOUNT_BASE64;
+if (!base64) {
+  throw new Error('SERVICE_ACCOUNT_BASE64 tidak ditemukan di .env');
+}
+const keys = JSON.parse(Buffer.from(base64, 'base64').toString('utf8'));
 
 const auth = new google.auth.JWT({
   email: keys.client_email,

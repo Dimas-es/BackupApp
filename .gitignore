@@ -2,3 +2,4 @@ node_modules/
 token_gdrive.json
 token_gsheets.json
 *.token.json
+.env

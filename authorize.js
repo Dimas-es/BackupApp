@@ -1,3 +1,4 @@
+require('dotenv').config();
 const fs = require('fs');
 const readline = require('readline');
 const { google } = require('googleapis');
@@ -5,10 +6,14 @@ const { google } = require('googleapis');
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 const TOKEN_PATH = 'token_gsheets.json';
 
-fs.readFile('credentials_gsheets.json', (err, content) => {
-  if (err) return console.error('Error loading client secret file:', err);
-  authorize(JSON.parse(content));
-});
+// Ambil credentials dari .env (base64)
+const base64 = process.env.GSHEETS_CREDENTIALS_BASE64;
+if (!base64) {
+  console.error('❌ GSHEETS_CREDENTIALS_BASE64 tidak ditemukan di .env');
+  process.exit(1);
+}
+const credentials = JSON.parse(Buffer.from(base64, 'base64').toString('utf8'));
+authorize(credentials);
 
 function authorize(credentials) {
   const { client_secret, client_id, redirect_uris } = credentials.installed;
@@ -19,7 +24,7 @@ function authorize(credentials) {
     scope: SCOPES,
   });
 
-  console.log('🔗 Buka link ini di browser dan ambil kode-nya:\n', authUrl);
+  console.log('🔗  linkBuka ini di browser dan ambil kode-nya:\n', authUrl);
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
