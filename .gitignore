@@ -1,5 +1,22 @@
+# Node modules
 node_modules/
+
+# Environment variables
+.env
+
+# Google API tokens & credentials
 token_gsheet.json
 token_gdrive.json
 *.token.json
-.env
+service-account.json
+credentials.json
+credentials_gdrive.json
+credentials_gsheets.json
+
+# VSCode settings (optional, jika tidak ingin dishare)
+.vscode/
+
+# Build artifacts (jika ada)
+dist/
+build/
+out/
