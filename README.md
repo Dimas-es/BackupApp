@@ -61,7 +61,7 @@ Siapkan Google API
 
 3. Buat OAuth Client ID atau Service Account
 
-4. Unduh file credentials.json dan simpan di folder auth/
+4. Unduh file credentials.json dan simpan di proyek
 
 Jalankan aplikasi
 
