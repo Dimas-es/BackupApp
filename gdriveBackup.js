@@ -1,3 +1,4 @@
+require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
 const { google } = require('googleapis');
@@ -5,11 +6,15 @@ const open = require('open');
 const express = require('express');
 
 const TOKEN_PATH = path.join(__dirname, 'token_gdrive.json');
-const CREDENTIALS_PATH = path.join(__dirname, 'credentials_gdrive.json');
 const REDIRECT_PORT = 3000;
 
+// Ambil kredensial langsung dari .env (base64)
+const credentials = process.env.GDRIVE_CREDENTIALS_BASE64
+  ? JSON.parse(Buffer.from(process.env.GDRIVE_CREDENTIALS_BASE64, 'base64').toString('utf8'))
+  : null;
+
 async function getDriveAuth(mainWindow, dialog) {
-  const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
+  if (!credentials) throw new Error('GDRIVE_CREDENTIALS_BASE64 tidak ditemukan di .env');
   const { client_secret, client_id, redirect_uris } = credentials.installed;
   const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, `http://localhost:${REDIRECT_PORT}`);
 
@@ -79,7 +84,7 @@ async function backupToGDrive(mainWindow, dialog, source, parentId = null) {
   if (!fs.existsSync(source)) throw new Error("Folder sumber tidak ditemukan.");
   const auth = await getDriveAuth(mainWindow, dialog);
   let backupFolderId = parentId;
-  if (!backupFolderId) {
+    if (!backupFolderId) {
     backupFolderId = await getOrCreateBackupFolder(auth);
   }
   await uploadFolderToDrive(auth, source, backupFolderId);
@@ -108,5 +113,7 @@ async function getOrCreateBackupFolder(auth) {
   });
   return folder.data.id;
 }
+
+
 
 module.exports = { backupToGDrive };

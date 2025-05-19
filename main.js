@@ -39,13 +39,13 @@ ipcMain.handle('select-folder', async () => {
 ipcMain.handle('backup-now', async (_, source, target) => {
   try {
     if (!fs.existsSync(source)) throw new Error("❌ Folder sumber tidak ditemukan.");
+    if (!target || typeof target !== 'string' || target.trim() === '') throw new Error("❌ Folder target belum dipilih.");
     if (!fs.existsSync(target)) fs.mkdirSync(target, { recursive: true });
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const destFolder = `${target}/backup-${timestamp}`;
     fs.cpSync(source, destFolder, { recursive: true });
 
-    // Kirim ke Google Sheets
     await appendLogToGoogleSheet(source, destFolder);
 
     return `✅ Backup berhasil ke: ${destFolder}`;
