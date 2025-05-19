@@ -1,8 +1,8 @@
-📦 BackupApp
+# 📦 BackupApp
 
 BackupApp adalah aplikasi desktop berbasis Electron dan Node.js untuk melakukan backup otomatis ke Google Drive, serta mencatat log backup ke Google Sheets. Penjadwalan dilakukan menggunakan node-schedule.
 
-👨‍👩‍👧‍👦 Anggota Tim & Kontribusi
+# 👨‍👩‍👧‍👦 Anggota Tim & Kontribusi
 
 | Nama                         | Kontribusi                                                                                  |
 | -----------------------------| --------------------------------------------------------------------------------------------|
@@ -12,7 +12,7 @@ BackupApp adalah aplikasi desktop berbasis Electron dan Node.js untuk melakukan 
 | Talitha Ramadhani Nur Azizah | Menghubungkan OAuth Client ID untuk akses Google Drive                                      |
 | Yusa Putra Rosdiana          | Membuat OAuth Client ID untuk google drive dan merapikan backend (struktur dan logika kode) |
 
-🚀 Fitur Utama
+# 🚀 Fitur Utama
    1. Backup otomatis file atau folder sesuai jadwal
 
    2. Upload hasil backup ke Google Drive
@@ -23,7 +23,7 @@ BackupApp adalah aplikasi desktop berbasis Electron dan Node.js untuk melakukan 
 
    5. Penjadwalan fleksibel menggunakan node-schedule
 
-🧰 Teknologi yang Digunakan
+# 🧰 Teknologi yang Digunakan
 
 1. Node.js
 
@@ -37,22 +37,22 @@ BackupApp adalah aplikasi desktop berbasis Electron dan Node.js untuk melakukan 
 
 6. googleapis (NPM)
 
-⚙️ Instalasi
+# ⚙️ Instalasi
 
-Clone repositori
+## Clone repositori
 
     git clone https://github.com/Dimas-es/BackupApp.git
     cd BackupApp
 
-(Disarankan) Atur konfigurasi NPM agar mengabaikan konflik dependensi
+## (Disarankan) Atur konfigurasi NPM agar mengabaikan konflik dependensi
 
     npm config set legacy-peer-deps true
 
-Install semua dependensi
+## Install semua dependensi
 
     npm install
 
-Siapkan Google API
+## Siapkan Google API
 
 1. Masuk ke Google Cloud Console
 
@@ -62,7 +62,7 @@ Siapkan Google API
 
 4. Unduh file credentials.json dan simpan di proyek
 
-Jalankan aplikasi
+## Jalankan aplikasi
 
     npm start
 
