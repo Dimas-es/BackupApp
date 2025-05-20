@@ -8,3 +8,6 @@ node_modules/
 token_gsheet.json
 token_gdrive.json
 *.token.json
+
+# Logs
+spreadsheet_id.txt

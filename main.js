@@ -38,6 +38,7 @@ ipcMain.handle('select-folder', async () => {
 // Backup manual
 ipcMain.handle('backup-now', async (_, source, target) => {
   try {
+    mainWindow.webContents.send('log-update', '⏳ Memulai proses backup lokal...');
     if (!fs.existsSync(source)) throw new Error("❌ Folder sumber tidak ditemukan.");
     if (!target || typeof target !== 'string' || target.trim() === '') throw new Error("❌ Folder target belum dipilih.");
     if (!fs.existsSync(target)) fs.mkdirSync(target, { recursive: true });
@@ -46,21 +47,30 @@ ipcMain.handle('backup-now', async (_, source, target) => {
     const destFolder = `${target}/backup-${timestamp}`;
     fs.cpSync(source, destFolder, { recursive: true });
 
+    mainWindow.webContents.send('log-update', '⏳ Menulis log ke Google Sheets...');
     await appendLogToGoogleSheet(source, destFolder);
 
+    mainWindow.webContents.send('log-update', `✅ Backup selesai ke: ${destFolder}`);
     return `✅ Backup berhasil ke: ${destFolder}`;
   } catch (err) {
+    mainWindow.webContents.send('log-update', `❌ Gagal backup: ${err.message}`);
     return `❌ Gagal backup: ${err.message}`;
   }
 });
 
+// Backup ke Google Drive
 ipcMain.handle('backup-to-gdrive', async (event, source, target) => {
   try {
+    mainWindow.webContents.send('log-update', '⏳ Memulai backup ke Google Drive...');
     const result = await backupToGDrive(null, null, source, target);
-    // Catat ke Google Sheets juga
+
+    mainWindow.webContents.send('log-update', '⏳ Menulis log ke Google Sheets...');
     await appendLogToGoogleSheet(source, 'Google Drive');
+
+    mainWindow.webContents.send('log-update', `✅ Backup ke Google Drive selesai.`);
     return result;
   } catch (err) {
+    mainWindow.webContents.send('log-update', `❌ Error: ${err.message}`);
     return `❌ Error: ${err.message}`;
   }
 });
@@ -85,5 +95,14 @@ ipcMain.handle('list-gdrive-folders', async () => {
     return folders;
   } catch (err) {
     return [];
+  }
+});
+
+ipcMain.handle('getSpreadsheetId', async () => {
+  try {
+    const id = fs.readFileSync('spreadsheet_id.txt', 'utf8').trim();
+    return id;
+  } catch {
+    return null;
   }
 });

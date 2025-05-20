@@ -1,31 +1,39 @@
+require('dotenv').config();
 const fs = require('fs');
 const { google } = require('googleapis');
-const readline = require('readline');
+const open = require('open');
+const express = require('express');
 
-// Scope buat akses Google Sheets
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
+const TOKEN_PATH = 'token_gsheet.json';
+const REDIRECT_PORT = 3001;
 
-// Tempat token disimpan setelah login pertama kali
-const TOKEN_PATH = 'token.json';
+const credentials = process.env.GSHEETS_CREDENTIALS_BASE64
+  ? JSON.parse(Buffer.from(process.env.GSHEETS_CREDENTIALS_BASE64, 'base64').toString('utf8'))
+  : null;
 
-/**
- * Fungsi utama yang bisa dipanggil di main.js
- */
 function appendLogToGoogleSheet(source, target) {
-  fs.readFile('credentials.json', (err, content) => {
-    if (err) return console.error('❌ Gagal membaca credentials.json:', err);
-    authorize(JSON.parse(content), (auth) => writeToSheet(auth, source, target));
+  if (!credentials) return console.error('❌ GSHEETS_CREDENTIALS_BASE64 tidak ditemukan di .env');
+  authorize(credentials, (auth) => {
+    if (fs.existsSync('spreadsheet_id.txt')) {
+      writeToSheet(auth, source, target);
+    } else {
+      createSpreadsheet(auth, (spreadsheetId) => {
+        fs.writeFileSync('spreadsheet_id.txt', spreadsheetId);
+        writeToSheet(auth, source, target);
+      });
+    }
   });
 }
 
-/**
- * Fungsi untuk otorisasi OAuth
- */
 function authorize(credentials, callback) {
-  const { client_secret, client_id, redirect_uris } = credentials.installed;
-  const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+  const { client_secret, client_id } = credentials.installed;
+  const oAuth2Client = new google.auth.OAuth2(
+    client_id,
+    client_secret,
+    `http://localhost:${REDIRECT_PORT}`
+  );
 
-  // Cek apakah token sudah pernah disimpan
   if (fs.existsSync(TOKEN_PATH)) {
     const token = fs.readFileSync(TOKEN_PATH);
     oAuth2Client.setCredentials(JSON.parse(token));
@@ -35,24 +43,15 @@ function authorize(credentials, callback) {
   }
 }
 
-/**
- * Fungsi untuk mendapatkan token OAuth baru
- */
 function getNewToken(oAuth2Client, callback) {
-  const authUrl = oAuth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: SCOPES,
-  });
+  const app = express();
+  let server;
 
-  console.log('🔐 Buka URL ini untuk login ke Google dan dapatkan kodenya:\n', authUrl);
+  app.get('/', (req, res) => {
+    const code = req.query.code;
+    res.send('<h2>Login berhasil! Anda bisa menutup tab ini dan kembali ke aplikasi.</h2>');
+    server.close();
 
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  rl.question('👉 Masukkan kode autentikasi di sini: ', (code) => {
-    rl.close();
     oAuth2Client.getToken(code, (err, token) => {
       if (err) return console.error('❌ Gagal mengambil token:', err.message);
       oAuth2Client.setCredentials(token);
@@ -61,25 +60,52 @@ function getNewToken(oAuth2Client, callback) {
       callback(oAuth2Client);
     });
   });
+
+  server = app.listen(REDIRECT_PORT, () => {
+    const authUrl = oAuth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: SCOPES,
+      redirect_uri: `http://localhost:${REDIRECT_PORT}`
+    });
+    open(authUrl);
+  });
 }
 
-/**
- * Fungsi untuk menulis data ke Google Sheets
- */
+function createSpreadsheet(auth, callback) {
+  const sheets = google.sheets({ version: 'v4', auth });
+  sheets.spreadsheets.create({
+    resource: {
+      properties: { title: 'Backup Log ' + new Date().toLocaleDateString() }
+    }
+  }, (err, res) => {
+    if (err) return console.error('❌ Gagal membuat spreadsheet:', err);
+    const spreadsheetId = res.data.spreadsheetId;
+    console.log('✅ Spreadsheet berhasil dibuat!');
+    console.log('Spreadsheet ID:', spreadsheetId);
+    console.log('Link:', res.data.spreadsheetUrl || `https://docs.google.com/spreadsheets/d/${spreadsheetId}`);
+    if (callback) callback(spreadsheetId);
+  });
+}
+
 function writeToSheet(auth, source, target) {
   const sheets = google.sheets({ version: 'v4', auth });
-
+  let spreadsheetId;
+  try {
+    spreadsheetId = fs.readFileSync('spreadsheet_id.txt', 'utf8').trim();
+  } catch (e) {
+    return console.error('❌ spreadsheet_id.txt tidak ditemukan. Backup gagal.');
+  }
   const values = [[new Date().toLocaleString(), source, target]];
   const resource = { values };
 
   sheets.spreadsheets.values.append({
-    spreadsheetId: '1Zd9w4mCHS-CrxlmeZahW2GXgFhuLRS-GuG_efYmLmqM', // 🔁 GANTI di sini
+    spreadsheetId,
     range: 'Sheet1!A1',
     valueInputOption: 'RAW',
     resource,
   }, (err, res) => {
     if (err) return console.error('❌ Error saat menulis ke Google Sheets:', err.message);
-    console.log(`✅ Log backup berhasil ditulis ke Google Sheets (${res.data.updates.updatedCells} sel)`);
+    console.log(`✅ Log backup berhasil ditulis ke Google Sheets`);
   });
 }
 

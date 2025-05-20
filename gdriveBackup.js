@@ -70,26 +70,49 @@ async function uploadToDrive(auth, filePath, parentId = null) {
   });
 }
 
-async function uploadFolderToDrive(auth, folderPath, parentId = null) {
+// Tambahkan fungsi ini untuk upload folder & subfolder secara rekursif
+async function uploadFolderRecursive(auth, folderPath, parentId = null) {
+  const drive = google.drive({ version: 'v3', auth });
+  const folderName = path.basename(folderPath);
+
+  // Buat folder di Drive
+  const fileMetadata = {
+    name: folderName,
+    mimeType: 'application/vnd.google-apps.folder',
+    parents: parentId ? [parentId] : []
+  };
+  const folder = await drive.files.create({
+    resource: fileMetadata,
+    fields: 'id'
+  });
+  const newFolderId = folder.data.id;
+
+  // Upload isi folder
   const files = fs.readdirSync(folderPath);
   for (const file of files) {
     const filePath = path.join(folderPath, file);
-    if (fs.statSync(filePath).isFile()) {
-      await uploadToDrive(auth, filePath, parentId);
+    const stat = fs.statSync(filePath);
+    if (stat.isFile()) {
+      await uploadToDrive(auth, filePath, newFolderId);
+    } else if (stat.isDirectory()) {
+      await uploadFolderRecursive(auth, filePath, newFolderId);
     }
   }
 }
 
+// Ubah fungsi backupToGDrive agar bisa backup folder beserta subfolder
 async function backupToGDrive(mainWindow, dialog, source, parentId = null) {
   if (!fs.existsSync(source)) throw new Error("Folder sumber tidak ditemukan.");
   const auth = await getDriveAuth(mainWindow, dialog);
   let backupFolderId = parentId;
-    if (!backupFolderId) {
+  if (!backupFolderId) {
     backupFolderId = await getOrCreateBackupFolder(auth);
   }
-  await uploadFolderToDrive(auth, source, backupFolderId);
+  await uploadFolderRecursive(auth, source, backupFolderId);
   return `✅ Backup ke Google Drive berhasil ke folder BackupApp.`;
 }
+
+module.exports = { backupToGDrive };
 async function getOrCreateBackupFolder(auth) {
   const drive = google.drive({ version: 'v3', auth });
   // Cari folder bernama "BackupApp" di root
@@ -113,7 +136,5 @@ async function getOrCreateBackupFolder(auth) {
   });
   return folder.data.id;
 }
-
-
 
 module.exports = { backupToGDrive };

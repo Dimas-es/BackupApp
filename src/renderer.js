@@ -49,10 +49,19 @@ function appendLog(msg) {
   log.prepend(p);
 }
 
-document.getElementById('openSheet').onclick = () => {
-  const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1Zd9w4mCHS-CrxlmeZahW2GXgFhuLRS-GuG_efYmLmqM/edit';
-  window.open(spreadsheetUrl, '_blank');
-};
+const openSheetBtn = document.getElementById('openSheet');
+
+window.electronAPI.getSpreadsheetId().then((spreadsheetId) => {
+  if (spreadsheetId) {
+    openSheetBtn.onclick = () => {
+      window.open(`https://docs.google.com/spreadsheets/d/${spreadsheetId}`, '_blank');
+    };
+  } else {
+    openSheetBtn.onclick = () => {
+      alert('Spreadsheet belum dibuat!');
+    };
+  }
+});
 
 document.getElementById('gdriveBackup').addEventListener('click', async () => {
   const source = document.getElementById('sourcePath').value;
