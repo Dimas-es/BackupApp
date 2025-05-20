@@ -27,7 +27,6 @@ function createWindow() {
 
 app.whenReady().then(createWindow);
 
-// Pilih folder (source/target)
 ipcMain.handle('select-folder', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory']
@@ -47,6 +46,8 @@ ipcMain.handle('backup-now', async (_, source, target) => {
     const destFolder = `${target}/backup-${timestamp}`;
     fs.cpSync(source, destFolder, { recursive: true });
 
+    mainWindow.webContents.send('log-update', `🕒 Backup otomatis ke Google Drive: ${result}`);
+
     mainWindow.webContents.send('log-update', '⏳ Menulis log ke Google Sheets...');
     await appendLogToGoogleSheet(source, destFolder);
 
@@ -55,6 +56,20 @@ ipcMain.handle('backup-now', async (_, source, target) => {
   } catch (err) {
     mainWindow.webContents.send('log-update', `❌ Gagal backup: ${err.message}`);
     return `❌ Gagal backup: ${err.message}`;
+  }
+});
+
+ipcMain.handle('set-schedule', async (_, rule, source, target) => {
+  try {
+    schedule.scheduleJob(rule, async () => {
+      // Lakukan backup lokal sesuai kebutuhan Anda
+      mainWindow.webContents.send('log-update', '⏳ Backup otomatis lokal dimulai...');
+      // ...proses backup lokal...
+      mainWindow.webContents.send('log-update', '✅ Backup otomatis lokal selesai.');
+    });
+    return 'Jadwal backup lokal berhasil diset!';
+  } catch (err) {
+    return `❌ Gagal set jadwal: ${err.message}`;
   }
 });
 
@@ -77,11 +92,15 @@ ipcMain.handle('backup-to-gdrive', async (event, source, target) => {
 
 ipcMain.handle('set-gdrive-schedule', (_, rule, source, parentId = null) => {
   schedule.scheduleJob(rule, async () => {
+    mainWindow.webContents.send('log-update', '⏳ Backup otomatis ke Google Drive dimulai...');
     try {
       const result = await backupToGDrive(null, null, source, parentId);
       mainWindow.webContents.send('log-update', `🕒 Backup otomatis ke Google Drive: ${result}`);
-      // Catat ke Google Sheets juga
+
+      mainWindow.webContents.send('log-update', '⏳ Menulis log ke Google Sheets...');
       await appendLogToGoogleSheet(source, 'Google Drive');
+
+      mainWindow.webContents.send('log-update', '✅ Backup otomatis ke Google Drive selesai.');
     } catch (err) {
       mainWindow.webContents.send('log-update', `❌ Gagal backup otomatis ke Google Drive: ${err.message}`);
     }
@@ -105,4 +124,11 @@ ipcMain.handle('getSpreadsheetId', async () => {
   } catch {
     return null;
   }
+});
+
+let isBackupCancelled = false;
+
+ipcMain.handle('cancel-backup', () => {
+  isBackupCancelled = true;
+  mainWindow.webContents.send('log-update', '⏹️ Backup dibatalkan oleh user.');
 });

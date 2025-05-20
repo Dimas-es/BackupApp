@@ -8,4 +8,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   backupToGdrive: (source) => ipcRenderer.invoke('backup-to-gdrive', source),
   setGdriveSchedule: (rule, source, parentId) => ipcRenderer.invoke('set-gdrive-schedule', rule, source, parentId),
   getSpreadsheetId: () => ipcRenderer.invoke('getSpreadsheetId'), 
+  cancelBackup: () => ipcRenderer.invoke('cancel-backup'),
 });

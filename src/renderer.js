@@ -88,3 +88,6 @@ function logMessage(msg) {
   logElement.scrollTop = logElement.scrollHeight;
 }
 
+document.getElementById('cancelBackup').onclick = () => {
+  window.electronAPI.cancelBackup();
+};
