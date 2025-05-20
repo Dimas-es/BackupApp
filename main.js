@@ -34,7 +34,6 @@ ipcMain.handle('select-folder', async () => {
   return result.filePaths[0];
 });
 
-// Backup manual
 ipcMain.handle('backup-now', async (_, source, target) => {
   try {
     mainWindow.webContents.send('log-update', '⏳ Memulai proses backup lokal...');
@@ -46,13 +45,11 @@ ipcMain.handle('backup-now', async (_, source, target) => {
     const destFolder = `${target}/backup-${timestamp}`;
     fs.cpSync(source, destFolder, { recursive: true });
 
-    mainWindow.webContents.send('log-update', `🕒 Backup otomatis ke Google Drive: ${result}`);
-
     mainWindow.webContents.send('log-update', '⏳ Menulis log ke Google Sheets...');
     await appendLogToGoogleSheet(source, destFolder);
 
     mainWindow.webContents.send('log-update', `✅ Backup selesai ke: ${destFolder}`);
-    return `✅ Backup berhasil ke: ${destFolder}`;
+    return `✅ Backup selesai ke: ${destFolder}`; // <-- Tambahkan return ini!
   } catch (err) {
     mainWindow.webContents.send('log-update', `❌ Gagal backup: ${err.message}`);
     return `❌ Gagal backup: ${err.message}`;
